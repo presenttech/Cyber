@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberTools - Cybersecurity Utilities</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0f0;
+            --secondary: #00f7ff;
+            --dark: #111;
+            --darker: #0a0a0a;
+            --light: #eee;
+            --glow: 0 0 10px var(--primary), 0 0 20px var(--primary);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        body {
+            background-color: var(--dark);
+            color: var(--primary);
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .cyber-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            border-bottom: 1px solid var(--primary);
+        }
+
+        .glitch {
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: var(--primary);
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 2px;
+            animation: glitch 2s linear infinite;
+        }
+
+        .glitch::before, .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .glitch::before {
+            left: 1px;
+            text-shadow: -1px 0 #f00;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim 3s infinite linear alternate-reverse;
+        }
+
+        .glitch::after {
+            left: -1px;
+            text-shadow: -1px 0 #00f;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim2 3s infinite linear alternate-reverse;
+        }
+
+        .cyber-subtitle {
+            color: var(--secondary);
+            font-size: 1.1rem;
+            margin-top: 0.5rem;
+            text-shadow: 0 0 5px var(--secondary);
+        }
+
+        .cyber-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .cyber-card {
+            background-color: rgba(15, 15, 15, 0.8);
+            border: 1px solid var(--primary);
+            border-radius: 5px;
+            padding: 2rem;
+            width: 100%;
+            max-width: 800px;
+            margin-bottom: 2rem;
+            position: relative;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+            transition: var(--transition);
+        }
+
+        .cyber-card:hover {
+            box-shadow: 0 0 25px rgba(0, 255, 0, 0.5);
+            transform: translateY(-5px);
+        }
+
+        .cyber-h3 {
+            color: var(--secondary);
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 5px var(--secondary);
+        }
+
+        .cyber-text {
+            color: var(--light);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .cyber-button {
+            background: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 0.5rem 0;
+        }
+
+        .cyber-button:hover {
+            background: rgba(0, 255, 0, 0.1);
+            box-shadow: var(--glow);
+        }
+
+        .cyber-nav {
+            display: flex;
+            justify-content: space-around;
+            background: var(--darker);
+            padding: 1rem 0;
+            border-top: 1px solid var(--primary);
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            z-index: 100;
+        }
+
+        .nav-item {
+            cursor: pointer;
+            color: var(--light);
+            transition: var(--transition);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            color: var(--primary);
+            text-shadow: 0 0 5px var(--primary);
+        }
+
+        .nav-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 5px;
+            height: 5px;
+            background: var(--primary);
+            border-radius: 50%;
+            box-shadow: 0 0 5px var(--primary);
+        }
+
+        .nav-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .nav-text {
+            font-size: 0.8rem;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .password-input-container {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .cyber-input {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--primary);
+            color: var(--light);
+            font-size: 1rem;
+            transition: var(--transition);
+            pointer-events: auto;
+            user-select: text;
+        }
+
+        .cyber-input:focus {
+            outline: none;
+            box-shadow: var(--glow);
+        }
+
+        .cyber-input::placeholder {
+            color: var(--light);
+            opacity: 0.7;
+        }
+
+        .eye-button {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--light);
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        .results-container {
+            margin-top: 2rem;
+            padding: 1rem;
+            border: 1px solid var(--primary);
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .strength-meter {
+            width: 100%;
+            height: 10px;
+            background: var(--darker);
+            margin: 1rem 0;
+            position: relative;
+        }
+
+        .strength-bar {
+            height: 100%;
+            width: 0%;
+            background: #f00;
+            transition: width 0.5s ease;
+        }
+
+        .crypto-container {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .crypto-section {
+            border: 1px solid var(--primary);
+            padding: 1.5rem;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .crypto-result {
+            margin-top: 1rem;
+            padding: 1.5rem;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px dashed var(--primary);
+            word-break: break-all;
+            line-height: 2; /* Increased for ~2 lines per method */
+        }
+
+        .crypto-result p {
+            margin-bottom: 1rem; /* Space between methods */
+            min-height: 2.5em; /* Ensures ~2 lines height */
+        }
+
+        .quiz-container {
+            width: 100%;
+        }
+
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            color: var(--secondary);
+        }
+
+        .quiz-question {
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            color: var(--light);
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .quiz-option {
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--primary);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .quiz-option:hover {
+            background: rgba(0, 255, 0, 0.1);
+        }
+
+        .quiz-option.correct {
+            background: rgba(0, 255, 0, 0.2);
+            border-color: #0f0;
+        }
+
+        .quiz-option.incorrect {
+            background: rgba(255, 0, 0, 0.2);
+            border-color: #f00;
+        }
+
+        .quiz-progress {
+            height: 5px;
+            background: var(--darker);
+            margin-bottom: 1rem;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .timer {
+            font-size: 1.2rem;
+            color: var(--secondary);
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .quiz-results {
+            display: none;
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--primary);
+        }
+
+        .result-score {
+            font-size: 2rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+        }
+
+        .result-item {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-left: 3px solid var(--primary);
+        }
+
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-1px, 1px); }
+            40% { transform: translate(-1px, -1px); }
+            60% { transform: translate(1px, 1px); }
+            80% { transform: translate(1px, -1px); }
+            100% { transform: translate(0); }
+        }
+
+        @keyframes glitch-anim {
+            0% { clip: rect(31px, 9999px, 94px, 0); }
+            20% { clip: rect(85px, 9999px, 77px, 0); }
+            40% { clip: rect(64px, 9999px, 98px, 0); }
+            60% { clip: rect(99px, 9999px, 114px, 0); }
+            80% { clip: rect(98px, 9999px, 129px, 0); }
+            100% { clip: rect(82px, 9999px, 64px, 0); }
+        }
+
+        @keyframes glitch-anim2 {
+            0% { clip: rect(30px, 9999px, 9px, 0); }
+            20% { clip: rect(25px, 9999px, 99px, 0); }
+            40% { clip: rect(75px, 9999px, 38px, 0); }
+            60% { clip: rect(0px, 9999px, 59px, 0); }
+            80% { clip: rect(32px, 9999px, 31px, 0); }
+            100% { clip: rect(134px, 9999px, 86px, 0); }
+        }
+
+        @media (max-width: 768px) {
+            .glitch { font-size: 2rem; }
+            .cyber-subtitle { font-size: 1rem; }
+            .cyber-card { padding: 1.5rem; }
+            .nav-icon { font-size: 1.2rem; }
+            .nav-text { font-size: 0.7rem; }
+            .crypto-result p { min-height: 2.2em; }
+        }
+
+        @media (max-width: 480px) {
+            .glitch { font-size: 1.5rem; }
+            .container { padding: 10px; }
+            .cyber-card { padding: 1rem; }
+            .cyber-button { padding: 0.6rem 1rem; font-size: 0.9rem; }
+            .crypto-result p { min-height: 2em; }
+        }
+    </style>
+</head>
+<body>
+    <div id="index-page" class="page active">
+        <div class="matrix-bg"></div>
+        <div class="container">
+            <header class="cyber-header">
+                <div class="glitch" data-text="CYBERTOOLS">CYBERTOOLS</div>
+                <p class="cyber-subtitle">Advanced Cybersecurity Utilities</p>
+            </header>
+            <main class="cyber-main">
+                <div class="cyber-card">
+                    <div class="card-content">
+                        <h3 class="cyber-h3">Temporary Email Generator</h3>
+                        <p class="cyber-text">Generate disposable email addresses for secure anonymous communication</p>
+                        <a href="https://temp-mail.io" target="_blank" class="cyber-button">
+                            <span class="button-text">Go to Temp-Mail</span>
+                        </a>
+                    </div>
+                </div>
+            </main>
+            <nav class="cyber-nav">
+                <div class="nav-item" onclick="showPage('password-checker-page')">
+                    <div class="nav-icon">🔒</div>
+                    <span class="nav-text">Password Check</span>
+                </div>
+                <div class="nav-item" onclick="showPage('encrypt-decrypt-page')">
+                    <div class="nav-icon">🔑</div>
+                    <span class="nav-text">Encrypt/Decrypt</span>
+                </div>
+                <div class="nav-item" onclick="showPage('quiz-page')">
+                    <div class="nav-icon">?</div>
+                    <span class="nav-text">Cyber Quiz</span>
+                </div>
+            </nav>
+        </div>
+    </div>
+
+    <div id="password-checker-page" class="page">
+        <div class="matrix-bg"></div>
+        <div class="container">
+            <header class="cyber-header">
+                <div class="glitch" data-text="PASSWORD CHECKER">PASSWORD CHECKER</div>
+                <p class="cyber-subtitle">Test Your Password Strength</p>
+            </header>
+            <main class="cyber-main">
+                <div class="cyber-card">
+                    <div class="card-content">
+                        <div class="password-input-container">
+                            <input type="password" id="password-input" class="cyber-input" placeholder="Enter your password" autofocus>
+                            <button id="toggle-visibility" class="eye-button">👁️</button>
+                        </div>
+                        <button id="check-password" class="cyber-button">
+                            <span class="button-text">Analyze Password</span>
+                        </button>
+                        <div id="results" class="results-container">
+                            <div class="strength-meter">
+                                <div id="strength-bar" class="strength-bar"></div>
+                            </div>
+                            <div id="strength-text" class="strength-text">Password Strength: </div>
+                            <div id="crack-time" class="crack-time">Time to crack: </div>
+                            <div id="suggestions" class="suggestions"></div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+            <nav class="cyber-nav">
+                <div class="nav-item active" onclick="showPage('password-checker-page')">
+                    <div class="nav-icon">🔒</div>
+                    <span class="nav-text">Password Check</span>
+                </div>
+                <div class="nav-item" onclick="showPage('encrypt-decrypt-page')">
+                    <div class="nav-icon">🔑</div>
+                    <span class="nav-text">Encrypt/Decrypt</span>
+                </div>
+                <div class="nav-item" onclick="showPage('quiz-page')">
+                    <div class="nav-icon">?</div>
+                    <span class="nav-text">Cyber Quiz</span>
+                </div>
+            </nav>
+        </div>
+    </div>
+
+    <div id="encrypt-decrypt-page" class="page">
+        <div class="matrix-bg"></div>
+        <div class="container">
+            <header class="cyber-header">
+                <div class="glitch" data-text="ENCRYPT/DECRYPT">ENCRYPT/DECRYPT</div>
+                <p class="cyber-subtitle">Password Encryption Utilities</p>
+            </header>
+            <main class="cyber-main">
+                <div class="cyber-card">
+                    <div class="card-content">
+                        <div class="crypto-container">
+                            <div class="crypto-section">
+                                <h3 class="cyber-h3">Encrypt Password</h3>
+                                <input type="text" id="password-to-encrypt" class="cyber-input" placeholder="Enter password to encrypt" autofocus>
+                                <button id="encrypt-btn" class="cyber-button">
+                                    <span class="button-text">Encrypt</span>
+                                </button>
+                                <div class="crypto-result" id="encryption-result"></div>
+                            </div>
+                            <div class="crypto-section">
+                                <h3 class="cyber-h3">Decrypt Password</h3>
+                                <input type="text" id="password-to-decrypt" class="cyber-input" placeholder="Enter encrypted password" autofocus>
+                                <button id="decrypt-btn" class="cyber-button">
+                                    <span class="button-text">Decrypt</span>
+                                </button>
+                                <div class="crypto-result" id="decryption-result"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+            <nav class="cyber-nav">
+                <div class="nav-item" onclick="showPage('password-checker-page')">
+                    <div class="nav-icon">🔒</div>
+                    <span class="nav-text">Password Check</span>
+                </div>
+                <div class="nav-item active" onclick="showPage('encrypt-decrypt-page')">
+                    <div class="nav-icon">🔑</div>
+                    <span class="nav-text">Encrypt/Decrypt</span>
+                </div>
+                <div class="nav-item" onclick="showPage('quiz-page')">
+                    <div class="nav-icon">?</div>
+                    <span class="nav-text">Cyber Quiz</span>
+                </div>
+            </nav>
+        </div>
+    </div>
+
+    <div id="quiz-page" class="page">
+        <div class="matrix-bg"></div>
+        <div class="container">
+            <header class="cyber-header">
+                <div class="glitch" data-text="CYBER QUIZ">CYBER QUIZ</div>
+                <p class="cyber-subtitle">Test Your IT Knowledge</p>
+            </header>
+            <main class="cyber-main">
+                <div class="cyber-card">
+                    <div class="card-content">
+                        <div class="quiz-container" id="quiz-container">
+                            <div class="quiz-header">
+                                <span>Question <span id="question-number">1</span>/10</span>
+                                <span>Score: <span id="score">0</span></span>
+                            </div>
+                            <div class="quiz-progress">
+                                <div class="progress-bar" id="progress-bar"></div>
+                            </div>
+                            <div class="timer" id="timer">Time left: 50s</div>
+                            <div class="quiz-question" id="question"></div>
+                            <div class="quiz-options" id="options"></div>
+                        </div>
+                        <div class="quiz-results" id="quiz-results">
+                            <h3 class="cyber-h3">Quiz Completed!</h3>
+                            <div class="result-score">Your Score: <span id="final-score">0</span>/10</div>
+                            <div class="result-details" id="result-details"></div>
+                            <button class="cyber-button restart-btn" id="restart-btn">Restart Quiz</button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+            <nav class="cyber-nav">
+                <div class="nav-item" onclick="showPage('password-checker-page')">
+                    <div class="nav-icon">🔒</div>
+                    <span class="nav-text">Password Check</span>
+                </div>
+                <div class="nav-item" onclick="showPage('encrypt-decrypt-page')">
+                    <div class="nav-icon">🔑</div>
+                    <span class="nav-text">Encrypt/Decrypt</span>
+                </div>
+                <div class="nav-item active" onclick="showPage('quiz-page')">
+                    <div class="nav-icon">?</div>
+                    <span class="nav-text">Cyber Quiz</span>
+                </div>
+            </nav>
+        </div>
+    </div>
+
+    <script>
+        // Matrix Background
+        const canvas = document.createElement('canvas');
+        document.querySelectorAll('.matrix-bg').forEach(bg => bg.appendChild(canvas.cloneNode()));
+        const ctxs = Array.from(document.querySelectorAll('.matrix-bg canvas')).map(c => c.getContext('2d'));
+        ctxs.forEach((ctx, i) => {
+            const canvas = ctx.canvas;
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            const chars = '01';
+            const fontSize = 14;
+            const columns = canvas.width / fontSize;
+            const drops = Array(Math.floor(columns)).fill(0);
+            function draw() {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#0f0';
+                ctx.font = `${fontSize}px monospace`;
+                drops.forEach((y, i) => {
+                    const text = chars.charAt(Math.floor(Math.random() * chars.length));
+                    ctx.fillText(text, i * fontSize, y * fontSize);
+                    if (y * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                    drops[i]++;
+                });
+            }
+            setInterval(draw, 33);
+        });
+
+        // Page Navigation
+        let quizActive = false;
+        let currentQuestions = []; // Store current quiz questions
+
+        function showPage(pageId) {
+            if (quizActive && pageId !== 'quiz-page') {
+                endQuiz(currentQuestions); // End quiz if navigating away
+            }
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            document.querySelector(`.nav-item[onclick="showPage('${pageId}')"]`).classList.add('active');
+            if (pageId === 'quiz-page' && !quizActive) {
+                startQuiz();
+            }
+        }
+
+        // Input Field Fixes
+        document.querySelectorAll('.cyber-input').forEach(input => {
+            input.addEventListener('focus', () => {
+                if (input.placeholder) input.dataset.placeholder = input.placeholder;
+                input.placeholder = '';
+            });
+            input.addEventListener('blur', () => {
+                if (!input.value && input.dataset.placeholder) {
+                    input.placeholder = input.dataset.placeholder;
+                }
+            });
+        });
+
+        // Password Checker
+        document.getElementById('toggle-visibility').addEventListener('click', () => {
+            const input = document.getElementById('password-input');
+            input.type = input.type === 'password' ? 'text' : 'password';
+        });
+
+        document.getElementById('check-password').addEventListener('click', () => {
+            const password = document.getElementById('password-input').value;
+            const strengthBar = document.getElementById('strength-bar');
+            const strengthText = document.getElementById('strength-text');
+            const crackTime = document.getElementById('crack-time');
+            const suggestions = document.getElementById('suggestions');
+
+            if (!password) {
+                strengthText.textContent = 'Please enter a password';
+                strengthBar.style.width = '0%';
+                crackTime.textContent = '';
+                suggestions.textContent = '';
+                return;
+            }
+
+            let strength = 0;
+            let feedback = [];
+            if (password.length >= 8) strength += 1; else feedback.push('Use at least 8 characters.');
+            if (/[A-Z]/.test(password)) strength += 1; else feedback.push('Add uppercase letters.');
+            if (/[a-z]/.test(password)) strength += 1; else feedback.push('Add lowercase letters.');
+            if (/[0-9]/.test(password)) strength += 1; else feedback.push('Add numbers.');
+            if (/[!@#$%^&*]/.test(password)) strength += 1; else feedback.push('Add special characters.');
+
+            const entropy = password.length * Math.log2(95);
+            const guessesPerSecond = 1e10;
+            const secondsToCrack = Math.pow(2, entropy) / guessesPerSecond;
+            let crackTimeText = secondsToCrack < 60 ? 'Less than a minute' :
+                               secondsToCrack < 3600 ? `${Math.ceil(secondsToCrack / 60)} minutes` :
+                               secondsToCrack < 86400 ? `${Math.ceil(secondsToCrack / 3600)} hours` :
+                               `${Math.ceil(secondsToCrack / 86400)} days`;
+
+            const strengthPercent = strength * 20;
+            strengthBar.style.width = `${strengthPercent}%`;
+            strengthBar.style.background = strengthPercent < 40 ? '#f00' : strengthPercent < 60 ? '#ff6600' : '#0f0';
+            strengthText.textContent = `Password Strength: ${strengthPercent <= 40 ? 'Weak' : strengthPercent <= 60 ? 'Moderate' : 'Strong'}`;
+            crackTime.textContent = `Time to crack: ${crackTimeText}`;
+            suggestions.innerHTML = feedback.length ? feedback.join('<br>') : 'Great password!';
+        });
+
+        // Encryption/Decryption
+        document.getElementById('encrypt-btn').addEventListener('click', () => {
+            const input = document.getElementById('password-to-encrypt').value;
+            const result = document.getElementById('encryption-result');
+            if (!input) {
+                result.textContent = 'Please enter a password';
+                return;
+            }
+            const base64 = btoa(input);
+            const sha256 = CryptoJS.SHA256(input).toString();
+            const aes = CryptoJS.AES.encrypt(input, 'secret-key').toString();
+            result.innerHTML = `
+                <p><strong>Base64:</strong> ${base64}</p>
+                <p><strong>SHA-256:</strong> ${sha256}</p>
+                <p><strong>AES:</strong> ${aes}</p>
+            `;
+        });
+
+        document.getElementById('decrypt-btn').addEventListener('click', () => {
+            const input = document.getElementById('password-to-decrypt').value;
+            const result = document.getElementById('decryption-result');
+            if (!input) {
+                result.textContent = 'Please enter an encrypted password';
+                return;
+            }
+            let base64Result = 'Invalid Base64';
+            try { base64Result = atob(input); } catch (e) {}
+            let aesResult = 'Invalid AES';
+            try { aesResult = CryptoJS.AES.decrypt(input, 'secret-key').toString(CryptoJS.enc.Utf8); } catch (e) {}
+            result.innerHTML = `
+                <p><strong>Base64 Decoded:</strong> ${base64Result}</p>
+                <p><strong>SHA-256:</strong> Cannot be decrypted (one-way hash)</p>
+                <p><strong>AES Decoded:</strong> ${aesResult}</p>
+            `;
+        });
+
+        // Quiz Logic
+        let currentQuestion = 0;
+        let score = 0;
+        let timer;
+        let usedQuestionIds = [];
+
+        function fetchQuestions() {
+            // Simulated API response with questions from external sources
+            const questionPool = [
+                { id: 1, question: 'Which one of the following describes spam?', options: ['Gathering information without consent', 'Sending unwanted bulk messages', 'Erasing files maliciously'], answer: 1, source: 'ProProfs' },
+                { id: 2, question: 'What does the “https://” at the beginning of a URL denote?', options: ['High definition site', 'Encrypted information', 'Newest version'], answer: 1, source: 'ProProfs' },
+                { id: 3, question: 'Which is an example of a phishing attack?', options: ['Fake email with malicious link', 'Overloading a server', 'Encrypting files'], answer: 0, source: 'F-Secure' },
+                { id: 4, question: 'What is pharming?', options: ['Fake websites for traffic', 'Sending spam emails', 'Hacking hardware'], answer: 0, source: 'Sanfoundry' },
+                { id: 5, question: 'What is a botnet?', options: ['Antivirus software', 'Networked computers for attacks', 'Password manager'], answer: 1, source: 'F-Secure' },
+                { id: 6, question: 'Which is not a peer-to-peer cyber-crime?', options: ['Phishing', 'Credit card leak in deep web', 'Injecting Trojans'], answer: 1, source: 'Sanfoundry' },
+                { id: 7, question: 'What does a strong password include?', options: ['Common words', 'Random characters', 'Short length'], answer: 1, source: 'W3Schools' },
+                { id: 8, question: 'What is the most common cyber threat?', options: ['Hardware failure', 'Human error', 'Power outage'], answer: 1, source: 'NordLayer' },
+                { id: 9, question: 'What does MFA stand for?', options: ['Multi-Factor Authentication', 'Main Firewall Access', 'Malware Filtering Algorithm'], answer: 0, source: 'Scouts' },
+                { id: 10, question: 'What is smishing?', options: ['Fake SMS phishing', 'Social media hacking', 'Software infection'], answer: 0, source: 'Scouts' },
+                { id: 11, question: 'Which company developed Norton Antivirus?', options: ['Symantec', 'McAfee', 'Kaspersky'], answer: 0, source: 'Watercooler Trivia' },
+                { id: 12, question: 'What is fuzzing?', options: ['Data encryption', 'Vulnerability testing', 'Network filtering'], answer: 1, source: 'Watercooler Trivia' },
+                { id: 13, question: 'What is the name of the first antivirus software?', options: ['Elk Cloner', 'Norton', 'McAfee'], answer: 0, source: 'NordLayer' },
+                { id: 14, question: 'Which is a type of cyberbullying?', options: ['Spreading rumors via email', 'Playing online games', 'Sharing photos legally'], answer: 0, source: 'ProProfs' },
+                { id: 15, question: 'What does a firewall do?', options: ['Filters network traffic', 'Encrypts data', 'Stores passwords'], answer: 0, source: 'W3Schools' }
+            ];
+
+            const available = questionPool.filter(q => !usedQuestionIds.includes(q.id));
+            if (available.length < 10) {
+                usedQuestionIds = [];
+                return questionPool.slice(0, 10).map(q => ({ ...q }));
+            }
+            const selected = [];
+            while (selected.length < 10) {
+                const idx = Math.floor(Math.random() * available.length);
+                selected.push({ ...available.splice(idx, 1)[0] });
+                usedQuestionIds.push(selected[selected.length - 1].id);
+            }
+            return selected;
+        }
+
+        function startQuiz() {
+            quizActive = true;
+            currentQuestion = 0;
+            score = 0;
+            currentQuestions = fetchQuestions();
+            document.getElementById('score').textContent = score;
+            document.getElementById('quiz-container').style.display = 'block';
+            document.getElementById('quiz-results').style.display = 'none';
+            showQuestion();
+        }
+
+        function showQuestion() {
+            if (currentQuestion >= currentQuestions.length) {
+                endQuiz(currentQuestions);
+                return;
+            }
+            const q = currentQuestions[currentQuestion];
+            document.getElementById('question-number').textContent = currentQuestion + 1;
+            document.getElementById('question').textContent = q.question;
+            const options = document.getElementById('options');
+            options.innerHTML = q.options.map((opt, i) => `
+                <div class="quiz-option" onclick="selectAnswer(${i})">${opt}</div>
+            `).join('');
+            document.getElementById('progress-bar').style.width = `${(currentQuestion / currentQuestions.length) * 100}%`;
+            let timeLeft = 50;
+            document.getElementById('timer').textContent = `Time left: ${timeLeft}s`;
+            clearInterval(timer);
+            timer = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').textContent = `Time left: ${timeLeft}s`;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    currentQuestion++;
+                    showQuestion();
+                }
+            }, 1000);
+        }
+
+        function selectAnswer(index) {
+            clearInterval(timer);
+            const q = currentQuestions[currentQuestion];
+            const options = document.querySelectorAll('.quiz-option');
+            options.forEach((opt, i) => {
+                opt.style.pointerEvents = 'none';
+                if (i === q.answer) opt.classList.add('correct');
+                if (i === index && i !== q.answer) opt.classList.add('incorrect');
+            });
+            if (index === q.answer) {
+                score++;
+                document.getElementById('score').textContent = score;
+            }
+            setTimeout(() => {
+                currentQuestion++;
+                showQuestion();
+            }, 1500);
+        }
+
+        function endQuiz(questions) {
+            quizActive = false;
+            clearInterval(timer);
+            document.getElementById('quiz-container').style.display = 'none';
+            document.getElementById('quiz-results').style.display = 'block';
+            document.getElementById('final-score').textContent = score;
+            const details = document.getElementById('result-details');
+            details.innerHTML = questions.map((q, i) => `
+                <div class="result-item">
+                    <div class="result-question">${i + 1}. ${q.question}</div>
+                    <div class="result-answer">Correct: ${q.options[q.answer]}</div>
+                    <div class="result-source">Source: ${q.source}</div>
+                </div>
+            `).join('');
+        }
+
+        document.getElementById('restart-btn').addEventListener('click', startQuiz);
+    </script>
+</body>
+</html>
